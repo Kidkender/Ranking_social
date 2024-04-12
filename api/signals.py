@@ -1,13 +1,14 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import Posts
+from .models import Posts, Ranking
 
 
 @receiver(post_save, sender=Posts)
 def update_ranking(sender, instance, created, **kwargs):
+    new_ranking = instance.calculate_ranking()
     if created:
-        instance.ranking = instance.calculate_raking()
-        instance.save()
+        Ranking.objects.update_or_create(post=instance, defaults={
+            'daily_ranking': new_ranking,
+            'sum_ranking': new_ranking})
     else:
-        instance.ranking = instance.calculate_raking()
-        Posts.objects.filter(id=instance.id).update(ranking=instance.ranking)
+        Ranking.objects.filter(id=instance.id).update(sum_ranking=new_ranking)
