@@ -42,6 +42,29 @@ INSTALLED_APPS = [
     'django_cron'
 ]
 
+CRON_CLASSES = [
+    'api.cron.UpdateDailyRankingCronJob',
+    'api.cron.UpdateWeeklyRankingCronJob'
+]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

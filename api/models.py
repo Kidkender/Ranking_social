@@ -1,6 +1,9 @@
 from django.db import models
 from .common import enumeration
 from datetime import datetime, timedelta
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Posts(models.Model):
@@ -21,6 +24,10 @@ class Posts(models.Model):
         ranking = self.countLike * enumeration.Score.LIKE.value + self.countComment * \
             enumeration.Score.COMMENT.value + self.countShare * enumeration.Score.SHARE.value
         return ranking
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        logger.info(f"Created post '{self.title}' successfully.")
 
 
 class Ranking(models.Model):
