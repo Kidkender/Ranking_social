@@ -1,15 +1,24 @@
 from django.db import models
-from .common import enumeration
-from datetime import datetime, timedelta
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+class Point(models.Model):
+    view = models.IntegerField(default=1)
+    like = models.IntegerField(default=5)
+    comment = models.IntegerField(default=10)
+    share = models.IntegerField(default=20)
+
+    createAt = models.DateTimeField(auto_now_add=True)
+    updateAt = models.DateTimeField(auto_now=True)
 
 
 class Posts(models.Model):
     postId = models.IntegerField(unique=True)
     title = models.CharField(max_length=100)
     description = models.TextField()
+    countView = models.IntegerField(default=0)
     countLike = models.IntegerField(default=0)
     countComment = models.IntegerField(default=0)
     countShare = models.IntegerField(default=0)
@@ -17,17 +26,18 @@ class Posts(models.Model):
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.title
 
-    def calculate_ranking(self):
-        ranking = self.countLike * enumeration.Score.LIKE.value + self.countComment * \
-            enumeration.Score.COMMENT.value + self.countShare * enumeration.Score.SHARE.value
+    def calculate_ranking(self) -> int:
+        point = Point.objects.first()
+        ranking = self.countLike * point.like + self.countComment * \
+            point.comment + self.countShare * point.share + self.countView * point.view
         return ranking
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        logger.info(f"Created post '{self.title}' successfully.")
+        logger.info(f"Created post '{self.postId}' successfully.")
 
 
 class Ranking(models.Model):
@@ -38,5 +48,5 @@ class Ranking(models.Model):
 
     updatedAt = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Ranking - Post: {self.post}, Daily Ranking: {self.daily_ranking}, Weekly Ranking: {self.weekly_ranking}, Sum Ranking: {self.sum_ranking}"

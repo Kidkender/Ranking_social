@@ -11,4 +11,4 @@ def update_ranking(sender, instance, created, **kwargs):
             'daily_ranking': new_ranking,
             'sum_ranking': new_ranking})
     else:
-        Ranking.objects.filter(id=instance.id).update(sum_ranking=new_ranking)
+        Ranking.objects.filter(post=instance).update(sum_ranking=new_ranking)

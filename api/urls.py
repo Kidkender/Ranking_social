@@ -10,4 +10,6 @@ urlpatterns = [
          name="retrieve_by_id_view"),
     path("ranking/post/<int:post_id>/", views.RankingRetrieveByPostView.as_view(),
          name="retrieve_by_post_id_view"),
+    path("point", views.PointListCreateView.as_view(), name='point_view'),
+    path("point/<int:pk>/", views.PointUpdateDestroyView.as_view(), name='point_update')
 ]

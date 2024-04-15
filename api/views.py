@@ -1,7 +1,7 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
-from .models import Posts, Ranking
-from .serializers import PostsSerializer, RankingSerializer
+from .models import Posts, Ranking, Point
+from .serializers import PostsSerializer, RankingSerializer, PointSerializer
 
 
 class PostListCreate(generics.ListCreateAPIView):
@@ -34,3 +34,14 @@ class RankingRetrieveByPostView(generics.RetrieveAPIView):
     queryset = Ranking.objects.all()
     serializer_class = RankingSerializer
     lookup_field = "post_id"
+
+
+class PointListCreateView(generics.ListCreateAPIView):
+    queryset = Point.objects.all()
+    serializer_class = PointSerializer
+
+
+class PointUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Point.objects.all()
+    serializer_class = PointSerializer
+    lookup_field = "pk"
