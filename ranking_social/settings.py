@@ -105,7 +105,7 @@ DATABASES = {
         'NAME':   os.environ.get('MYSQL_DATABASE'),
         'USER': os.environ.get('MYSQL_USER'),
         'PASSWORD': os.environ.get('MYSQL_PASSWORD'),
-        'HOST': 'localhost',
+        'HOST': 'localhost',  # db in docker
         'PORT': 3306
     }
 }

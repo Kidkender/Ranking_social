@@ -5,7 +5,9 @@ from .models import Posts, Ranking
 
 @receiver(post_save, sender=Posts)
 def update_ranking(sender, instance, created, **kwargs):
+    print("Vao day nha")
     new_ranking = instance.calculate_ranking()
+    print("ranking: ", new_ranking)
     if created:
         Ranking.objects.update_or_create(post=instance, defaults={
             'daily_ranking': new_ranking,

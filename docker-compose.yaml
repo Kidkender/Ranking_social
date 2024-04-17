@@ -1,41 +1,27 @@
-version: "1"
+version: "3.8"
 services:
   db:
-    image: mysql
+    image: mysql:latest
     container_name: mysql
     restart: always
-    volumes:
-      - data:/var/lib/mysql
+    command: mysqld --default-authentication-plugin=mysql_native_password
+
+    env_file:
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "3307:3306"
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "mysql",
-          "-h",
-          "localhost",
-          "-u",
-          "root",
-          "-p${MYSQL_ROOT_PASSWORD}",
-          "-e",
-          "SELECT 1",
-        ]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
+      - "3306:3306"
+
   backend:
+    container_name: django_social_ranking
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: social_ranking
-    command: sh -c "python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
+    command:
+      ["sh", "-c", "python manage.py migrate && python manage.py runserver"]
     restart: always
     volumes:
       - .:/app
