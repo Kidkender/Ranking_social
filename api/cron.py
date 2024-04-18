@@ -42,4 +42,4 @@ class UpdateWeeklyRankingCronJob(CronJobBase):
 
 
 cron_manager = CronJobManager(
-    [UpdateDailyRankingCronJob, UpdateWeeklyRankingCronJob])
+    [UpdateYesterdaySumRankingCronJob, UpdateDailyRankingCronJob, UpdateWeeklyRankingCronJob])

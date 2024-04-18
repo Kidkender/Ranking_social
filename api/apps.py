@@ -1,5 +1,6 @@
 from django.apps import AppConfig
 import logging
+from django.db.models.signals import post_migrate
 
 
 class ApiConfig(AppConfig):
@@ -8,9 +9,10 @@ class ApiConfig(AppConfig):
 
     def ready(self) -> None:
         from . import signals
-        self.check_initalize_point()
+        post_migrate.connect(self.check_initalize_point)
+        # self.check_initalize_point()
 
-    def check_initalize_point(self):
+    def check_initalize_point(self, **kwargs):
         from .models import Point
         from .utils.timeUtils import get_datetime_now
 
