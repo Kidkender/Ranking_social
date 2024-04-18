@@ -8,6 +8,17 @@ RUN_AT_TIMES = ['00:00']
 logger = logging.getLogger(__name__)
 
 
+class UpdateYesterdaySumRankingCronJob(CronJobBase):
+    schedule = Schedule(run_at_times=['23:59'])
+    code = 'update_yesterday_sum_ranking_cron_job'
+
+    def do(self):
+        for ranking in Ranking.objects.all():
+            ranking.yesterday_sum_ranking = ranking.sum_ranking
+            ranking.save()
+        logger.info('Update yesterday_sum_ranking successfully')
+
+
 class UpdateDailyRankingCronJob(CronJobBase):
     schedule = Schedule(run_at_times=RUN_AT_TIMES)
     code = 'update_daily_ranking_cron_job'

@@ -5,12 +5,16 @@ from .models import Posts, Ranking
 
 @receiver(post_save, sender=Posts)
 def update_ranking(sender, instance, created, **kwargs):
-    print("Vao day nha")
-    new_ranking = instance.calculate_ranking()
-    print("ranking: ", new_ranking)
+    new_sum_ranking = instance.calculate_ranking()
     if created:
         Ranking.objects.update_or_create(post=instance, defaults={
-            'daily_ranking': new_ranking,
-            'sum_ranking': new_ranking})
+            'sum_ranking': new_sum_ranking})
     else:
-        Ranking.objects.filter(post=instance).update(sum_ranking=new_ranking)
+        ranking = Ranking.objects.get(post=instance)
+        yesterday_sum_ranking = ranking.yesterday_sum_ranking
+
+        new_daily_ranking = new_sum_ranking - yesterday_sum_ranking
+
+        ranking.daily_ranking = new_daily_ranking
+        ranking.sum_ranking = new_sum_ranking
+        ranking.save()

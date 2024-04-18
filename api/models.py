@@ -18,6 +18,9 @@ class Posts(models.Model):
     postId = models.IntegerField(unique=True)
     title = models.CharField(max_length=100)
     description = models.TextField()
+    postCode = models.IntegerField(default=0)
+    location = models.TextField(max_length=300)
+
     countView = models.IntegerField(default=0)
     countLike = models.IntegerField(default=0)
     countComment = models.IntegerField(default=0)
@@ -44,6 +47,7 @@ class Ranking(models.Model):
     post = models.ForeignKey('Posts', on_delete=models.CASCADE)
     daily_ranking = models.IntegerField(default=0)
     weekly_ranking = models.IntegerField(default=0)
+    yesterday_sum_ranking = models.IntegerField(default=0)
     sum_ranking = models.IntegerField(default=0)
 
     updatedAt = models.DateTimeField(auto_now=True)

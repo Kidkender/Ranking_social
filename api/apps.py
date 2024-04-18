@@ -7,6 +7,7 @@ class ApiConfig(AppConfig):
     name = 'api'
 
     def ready(self) -> None:
+        from . import signals
         self.check_initalize_point()
 
     def check_initalize_point(self):
