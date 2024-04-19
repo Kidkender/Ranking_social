@@ -10,7 +10,6 @@ class ApiConfig(AppConfig):
     def ready(self) -> None:
         from . import signals
         post_migrate.connect(self.check_initalize_point)
-        # self.check_initalize_point()
 
     def check_initalize_point(self, **kwargs):
         from .models import Point

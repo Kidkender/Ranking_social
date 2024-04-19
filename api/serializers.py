@@ -5,7 +5,7 @@ from .models import Posts, Ranking, Point
 class PostsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Posts
-        fields = ["id", "postId", "title", "description", "countView",
+        fields = ["id", "postId", "title", "description", "postCode", "location", "countView",
                   "countLike", "countComment", "countShare", "createdAt", "updatedAt"]
 
 

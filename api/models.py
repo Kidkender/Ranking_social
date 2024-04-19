@@ -15,7 +15,7 @@ class Point(models.Model):
 
 
 class Posts(models.Model):
-    postId = models.IntegerField(unique=True)
+    postId = models.TextField(unique=True, max_length=255)
     title = models.CharField(max_length=100)
     description = models.TextField()
     postCode = models.IntegerField(default=0)
