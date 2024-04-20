@@ -36,12 +36,12 @@ class RankingRetrieveByPostView(generics.RetrieveAPIView):
     lookup_field = "post_id"
 
 
-class PointListCreateView(generics.ListCreateAPIView):
+class PointApiView(generics.ListAPIView):
     queryset = Point.objects.all()
     serializer_class = PointSerializer
 
 
-class PointUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+class PointUpdateApiView(generics.RetrieveUpdateAPIView):
     queryset = Point.objects.all()
     serializer_class = PointSerializer
     lookup_field = "pk"
@@ -52,11 +52,11 @@ class RankingByPostCodeApiView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         post_code = self.kwargs.get('post_code')
-        post = Posts.objects.filter(postCode=post_code).first()
-        if post:
-            return Ranking.objects.filter(post=post)
+        posts = Posts.objects.filter(postCode=post_code)
+        if posts.exists():
+            return Ranking.objects.filter(post__in=posts)
         else:
-            return None
+            return Ranking.objects.none()
 
     def retrieve(self, request, *args, **kwargs):
         queryset = self.get_queryset()

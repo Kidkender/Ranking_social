@@ -1,7 +1,22 @@
 from django.db import models
+from django.core.validators import MinValueValidator, RegexValidator
+from django.core.exceptions import ValidationError
+from .common.constants.error import VALIDATOR_VALUE_NON_NEGATIVE, VALIDATOR_SPECTIAL_CHARACTER, VALIDATOR_ONLY_NUMBER
+import re
 import logging
 
+
 logger = logging.getLogger(__name__)
+
+
+def validate_with_spectial_charactor(_value):
+    if not re.match(r'^[a-zA-Z0-9]+$', _value):
+        raise ValidationError(VALIDATOR_SPECTIAL_CHARACTER)
+
+
+def only_number(_value):
+    if _value.isdigit() == False:
+        raise ValidationError(VALIDATOR_ONLY_NUMBER)
 
 
 class Point(models.Model):
@@ -15,16 +30,22 @@ class Point(models.Model):
 
 
 class Posts(models.Model):
-    postId = models.TextField(unique=True, max_length=255)
+    postId = models.TextField(
+        unique=True, max_length=255, validators=[validate_with_spectial_charactor])
     title = models.CharField(max_length=100)
     description = models.TextField()
-    postCode = models.IntegerField(default=0)
+    postCode = models.IntegerField(
+        default=0, validators=[MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
     location = models.TextField(max_length=300)
 
-    countView = models.IntegerField(default=0)
-    countLike = models.IntegerField(default=0)
-    countComment = models.IntegerField(default=0)
-    countShare = models.IntegerField(default=0)
+    countView = models.IntegerField(
+        default=0, validators=[MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
+    countLike = models.IntegerField(
+        default=0, validators=[MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
+    countComment = models.IntegerField(
+        default=0, validators=[MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
+    countShare = models.IntegerField(
+        default=0, validators=[MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
 
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
