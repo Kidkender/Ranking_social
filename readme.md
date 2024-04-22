@@ -53,8 +53,18 @@ Above is variables relation your database and secret key for run this app.
 #### Need migrate change database to your db
 
 ```bash
-   python manage.py migrate
+  python manage.py migrate
 ```
+
+#### 📜After migrate using need import data from excel to database
+
+Open terminal, using cli:
+
+```bash
+  python manage.py import_data
+```
+
+If successfully, in console will be log `Data imported successfully`
 
 To run server you run cli:
 
