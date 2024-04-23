@@ -25,8 +25,6 @@ class Command(BaseCommand):
         db = MySQLdb.connect(host="localhost", user=username,
                              passwd=password, db=DB)
         cursor = db.cursor()
-        # for col in df.columns:
-        #     print("Name col: ", col)
 
         for index, row in df.iterrows():
             nearby_dis = eval(row['Nearby_Dis'])
@@ -42,6 +40,11 @@ class Command(BaseCommand):
                 CBD=row['CBD'],
                 id_old=row["id_old"],
                 Len=row["Len"],
+                Nearby_Dis=row['Nearby_Dis'],
+                Nearby=row['Nearby'],
+                Nearby_Dis_List=row['Nearby_Dis_List'],
+                Nearby_List=row['Nearby_List'],
+                Nearby_List_Codes=row['Nearby_List_Codes'],
             )
             instance.save()
 

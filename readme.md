@@ -24,7 +24,19 @@ After installation you can check, open terminal
 
 If result is 3.11 or up sucessfully
 
-#### 2. Install library
+#### 2. Create env python
+
+```bash
+  python -m venv devenv
+```
+
+Activate env (at root project) cli:
+
+```bash
+  devenv\Scripts\activate
+```
+
+#### 3. Install library
 
 Open terminal inside folder ranking_social (The root folder is cloned from git)
 
@@ -36,13 +48,20 @@ After running this command the libraries will be installed
 
 ## ✔️Environment Variables
 
-To run this project, you will need to add the following environment variables to your .env file
+Copy and paste content to your file env
+
+```bash
+export DJANGO_SECRET_KEY = 'django-insecure-tvukbpojr-0tfajk(0pjp4qs))@66$pal6asr2(_42+a0kt-a+'
+export DEBUG = TRUE
+export DJANGO_ALLOWED_HOSTS =_ localhost 127.0.0.1 [::1]
+```
+
+Then, you will need to add the following environment variables to your .env file
 
 `MYSQL_USER`
 `MYSQL_DATABASE`
 `MYSQL_ROOT_PASSWORD`
 `MYSQL_PASSWORD`
-`DJANGO_SECRET_KEY`
 
 Above is variables relation your database and secret key for run this app.
 

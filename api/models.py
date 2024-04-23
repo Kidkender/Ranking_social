@@ -29,15 +29,36 @@ class Point(models.Model):
     updateAt = models.DateTimeField(auto_now=True)
 
 
+class Suburbs(models.Model):
+    suburbs_id = models.IntegerField(primary_key=True)
+
+    Suburb = models.CharField(max_length=100)
+    State = models.CharField(max_length=10)
+    Postcode = models.IntegerField(default=0, validators=[
+        MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
+    Combined = models.TextField(max_length=100)
+    Latitude = models.DecimalField(default=0, max_digits=10, decimal_places=10)
+    Longitude = models.DecimalField(
+        default=0, max_digits=10, decimal_places=10)
+    CBD = models.DecimalField(default=0, max_digits=10, decimal_places=10)
+    id_old = models.IntegerField(default=0, validators=[
+        MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
+    Len = models.DecimalField(default=0, max_digits=10, decimal_places=10)
+    Nearby = models.TextField(null=True)
+    Nearby_Dis = models.TextField(null=True)
+    Nearby_Dis_List = models.TextField(null=True)
+    Nearby_List = models.TextField(null=True)
+    Nearby_List_Codes = models.TextField(null=True)
+
+
 class Posts(models.Model):
-    postId = models.TextField(
-        unique=True, max_length=255, validators=[validate_with_spectial_charactor])
+    postId = models.TextField(unique=True, max_length=255, validators=[
+                              validate_with_spectial_charactor])
     title = models.CharField(max_length=100)
     description = models.TextField()
     postCode = models.IntegerField(
         default=0, validators=[MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
     location = models.TextField(max_length=300)
-
     countView = models.IntegerField(
         default=0, validators=[MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
     countLike = models.IntegerField(
@@ -46,9 +67,11 @@ class Posts(models.Model):
         default=0, validators=[MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
     countShare = models.IntegerField(
         default=0, validators=[MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
-
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
+
+    suburbs = models.ForeignKey(
+        Suburbs, on_delete=models.CASCADE, to_field='suburbs_id')
 
     def __str__(self) -> str:
         return self.title
@@ -75,19 +98,3 @@ class Ranking(models.Model):
 
     def __str__(self) -> str:
         return f"Ranking - Post: {self.post}, Daily Ranking: {self.daily_ranking}, Weekly Ranking: {self.weekly_ranking}, Sum Ranking: {self.sum_ranking}"
-
-
-class Suburbs(models.Model):
-    id_suburb = models.IntegerField(default=0)
-    Suburb = models.CharField(max_length=100)
-    State = models.CharField(max_length=10)
-    Postcode = models.IntegerField(default=0, validators=[
-        MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
-    Combined = models.TextField(max_length=100)
-    Latitude = models.DecimalField(default=0, max_digits=10, decimal_places=10)
-    Longitude = models.DecimalField(
-        default=0, max_digits=10, decimal_places=10)
-    CBD = models.DecimalField(default=0, max_digits=10, decimal_places=10)
-    id_old = models.IntegerField(default=0, validators=[
-        MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
-    Len = models.DecimalField(default=0, max_digits=10, decimal_places=10)
