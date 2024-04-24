@@ -19,6 +19,11 @@ def only_number(_value):
         raise ValidationError(VALIDATOR_ONLY_NUMBER)
 
 
+def get_default_suburb():
+    default_suburb_id = 1
+    return default_suburb_id
+
+
 class Point(models.Model):
     view = models.IntegerField(default=1)
     like = models.IntegerField(default=5)
@@ -30,7 +35,8 @@ class Point(models.Model):
 
 
 class Suburbs(models.Model):
-    suburbs_id = models.IntegerField(primary_key=True)
+    id_suburb = models.IntegerField(validators=[
+        MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
 
     Suburb = models.CharField(max_length=100)
     State = models.CharField(max_length=10)
@@ -71,7 +77,7 @@ class Posts(models.Model):
     updatedAt = models.DateTimeField(auto_now=True)
 
     suburbs = models.ForeignKey(
-        Suburbs, on_delete=models.CASCADE, to_field='suburbs_id')
+        'Suburbs', on_delete=models.CASCADE, default=get_default_suburb)
 
     def __str__(self) -> str:
         return self.title

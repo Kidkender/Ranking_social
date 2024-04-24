@@ -1,53 +1,58 @@
-from rest_framework import generics, status
+from rest_framework import status
 from rest_framework.response import Response
-from .models import Posts, Ranking, Point
-from .serializers import PostsSerializer, RankingSerializer, PointSerializer
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, RetrieveUpdateAPIView
+from .models import Posts, Ranking, Point, Suburbs
+from .serializers import PostsSerializer, RankingSerializer, PointSerializer, SuburbsSerializer
+from rest_framework.pagination import PageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import SuburbsFilter
 
 
-class PostListCreate(generics.ListCreateAPIView):
+class PostListCreate(ListCreateAPIView):
     queryset = Posts.objects.all()
     serializer_class = PostsSerializer
+    # filter_backends = [DjangoFilterBackend]
 
     def delete(self, request, *args, **kwargs):
         Posts.objects.all().delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class PostRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+class PostRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
     queryset = Posts.objects.all()
     serializer_class = PostsSerializer
     lookup_field = "pk"
 
 
-class RankingView(generics.ListAPIView):
+class RankingView(ListAPIView):
     queryset = Ranking.objects.all()
     serializer_class = RankingSerializer
 
 
-class RankingRetrieveByIDView(generics.RetrieveAPIView):
+class RankingRetrieveByIDView(RetrieveAPIView):
     queryset = Ranking.objects.all()
     serializer_class = RankingSerializer
     lookup_field = "pk"
 
 
-class RankingRetrieveByPostView(generics.RetrieveAPIView):
+class RankingRetrieveByPostView(RetrieveAPIView):
     queryset = Ranking.objects.all()
     serializer_class = RankingSerializer
     lookup_field = "post_id"
 
 
-class PointApiView(generics.ListAPIView):
+class PointApiView(ListAPIView):
     queryset = Point.objects.all()
     serializer_class = PointSerializer
 
 
-class PointUpdateApiView(generics.RetrieveUpdateAPIView):
+class PointUpdateApiView(RetrieveUpdateAPIView):
     queryset = Point.objects.all()
     serializer_class = PointSerializer
     lookup_field = "pk"
 
 
-class RankingByPostCodeApiView(generics.RetrieveAPIView):
+class RankingByPostCodeApiView(RetrieveAPIView):
     serializer_class = RankingSerializer
 
     def get_queryset(self):
@@ -67,7 +72,7 @@ class RankingByPostCodeApiView(generics.RetrieveAPIView):
             return Response({'error': 'Post with the given postCode does not exist.'}, status=404)
 
 
-class RankingByPostIDApiView(generics.RetrieveAPIView):
+class RankingByPostIDApiView(RetrieveAPIView):
     serializer_class = RankingSerializer
 
     def get_queryset(self):
@@ -85,3 +90,12 @@ class RankingByPostIDApiView(generics.RetrieveAPIView):
             return Response(serializer.data)
         else:
             return Response({'error': 'Post with the post ID is not found.'}, status=404)
+
+
+class SuburbsApiListView(ListAPIView):
+    queryset = Suburbs.objects.all()
+    serializer_class = SuburbsSerializer
+    pagination_class = PageNumberPagination
+    pagination_class.page_size = 10
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = SuburbsFilter

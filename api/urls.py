@@ -17,5 +17,6 @@ urlpatterns = [
          views.RankingByPostIDApiView.as_view(), name='ranking-by-post-ID'),
 
     path("point", views.PointApiView.as_view(), name='point_view'),
-    path("point/<int:pk>/", views.PointUpdateApiView.as_view(), name='point_update')
+    path("point/<int:pk>/", views.PointUpdateApiView.as_view(), name='point_update'),
+    path("suburbs", views.SuburbsApiListView.as_view(), name="suburbs_view")
 ]
