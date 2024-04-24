@@ -56,15 +56,16 @@ class Suburbs(models.Model):
     Nearby_List = models.TextField(null=True)
     Nearby_List_Codes = models.TextField(null=True)
 
+    def __str__(self):
+        return f'{self.Combined}'
+
 
 class Posts(models.Model):
     postId = models.TextField(unique=True, max_length=255, validators=[
                               validate_with_spectial_charactor])
     title = models.CharField(max_length=100)
     description = models.TextField()
-    postCode = models.IntegerField(
-        default=0, validators=[MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
-    location = models.TextField(max_length=300)
+
     countView = models.IntegerField(
         default=0, validators=[MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
     countLike = models.IntegerField(

@@ -3,9 +3,11 @@ from .models import Posts, Ranking, Point, Suburbs
 
 
 class PostsSerializer(serializers.ModelSerializer):
+    combined = serializers.ReadOnlyField(source='suburbs.Combined')
+
     class Meta:
         model = Posts
-        fields = ["id", "postId", "title", "description", "postCode", "location", "suburbs_id", "countView",
+        fields = ["id", "postId", "title", "description", "suburbs", "combined", "countView",
                   "countLike", "countComment", "countShare", "createdAt", "updatedAt"]
 
 
@@ -23,6 +25,8 @@ class PointSerializer(serializers.ModelSerializer):
 
 
 class SuburbsSerializer(serializers.ModelSerializer):
+    Nearby_List = serializers.JSONField()
+
     class Meta:
         model = Suburbs
         fields = ["id", "Suburb", "State",
