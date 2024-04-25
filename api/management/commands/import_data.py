@@ -14,13 +14,20 @@ password = os.environ.get('MYSQL_PASSWORD')
 class Command(BaseCommand):
     help = 'Import data from Excel to MySQL'
 
+    def add_arguments(self, parser):
+        parser.add_argument('excel_file', type=str, help='Excel file name')
+
     def handle(self, *args, **kwargs):
+        excel_file = kwargs['excel_file']
         base_dir = os.path.dirname(os.path.abspath(__file__))
+        excel_path = os.path.join(base_dir, '..', '..', 'data', excel_file)
 
-        excel_file = os.path.join(
-            base_dir, '..', '..', 'data', 'suburbs_3.xlsx')
+        if not os.path.exists(excel_path):
+            self.stdout.write(
+                self.style.ERROR(f'Excel file {excel_file} not found'))
+            return
 
-        df = pd.read_excel(excel_file)
+        df = pd.read_excel(excel_path)
 
         db = MySQLdb.connect(host="localhost", user=username,
                              passwd=password, db=DB)

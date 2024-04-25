@@ -77,10 +77,11 @@ Above is variables relation your database and secret key for run this app.
 
 #### 📜After migrate using need import data from excel to database
 
+You need to put your excel file into the 'data' in this project folder. Your excel file must have the same schema as the old excel file.
 Open terminal, using cli:
 
 ```bash
-  python manage.py import_data
+  python manage.py import_data <excel_file_name>
 ```
 
 If successfully, in console will be log `Data imported successfully`
