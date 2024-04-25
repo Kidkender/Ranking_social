@@ -80,6 +80,13 @@ class Posts(models.Model):
     suburbs = models.ForeignKey(
         'Suburbs', on_delete=models.CASCADE, default=get_default_suburb)
 
+    @property
+    def ranking(self):
+        try:
+            return self.ranking_set.first()
+        except Ranking.DoesNotExist:
+            return None
+
     def __str__(self) -> str:
         return self.title
 

@@ -6,6 +6,7 @@ from .serializers import PostsSerializer, RankingSerializer, PointSerializer, Su
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import SuburbsFilter
+from rest_framework.exceptions import NotFound
 from .common.constants import error
 import ast
 
@@ -14,6 +15,18 @@ def get_id_from_combined(combined_list):
     suburbs_ids = Suburbs.objects.filter(
         Combined__in=[item[0] for item in combined_list]).values_list('id', flat=True)
     return suburbs_ids
+
+
+def get_post_by_suburbs_id(suburbs_id: int) -> Posts:
+    suburb = Suburbs.objects.filter(id=suburbs_id).first()
+    if not suburb:
+        raise NotFound(detail=error.ERROR_SUBURB_NOT_FOUND)
+
+    nearby_list_raw = suburb.Nearby_List
+    nearby_list = ast.literal_eval(nearby_list_raw)
+    list_ids = list(get_id_from_combined(nearby_list))
+    list_ids.append(suburbs_id)
+    return Posts.objects.filter(suburbs_id__in=list_ids)
 
 
 class PostListCreate(ListCreateAPIView):
@@ -36,23 +49,13 @@ class FindPostsBySuburbsIdApiView(ListAPIView):
 
     def get_queryset(self):
         suburbs_id = self.kwargs.get('id')
-        suburb = Suburbs.objects.filter(id=suburbs_id).first()
-        if suburb:
-            nearby_list_raw = suburb.Nearby_List
-            nearby_list = ast.literal_eval(nearby_list_raw)
-            list_ids = list(get_id_from_combined(nearby_list))
-            list_ids.append(suburbs_id)
-            return Posts.objects.filter(suburbs_id__in=list_ids)
-        else:
-            return Posts.objects.none()
+        return get_post_by_suburbs_id(suburbs_id)
 
     def retrieve(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        if queryset:
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(serializer.data)
-        else:
-            return Response({'error': error.ERROR_POST_NOT_FOUND_WITH_SUBURB}, status=404)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class PostsNearByListApiView(ListAPIView):
@@ -63,26 +66,16 @@ class PostsNearByListApiView(ListAPIView):
         post = Posts.objects.filter(id=post_id).first()
 
         if not post:
-            return Response({'error': error.ERROR_POST_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND)
+            raise NotFound(detail=error.ERROR_POST_NOT_FOUND)
 
         suburbs_id = post.suburbs.id
-        suburb = Suburbs.objects.filter(id=suburbs_id).first()
-        if suburb:
-            nearby_list_raw = suburb.Nearby_List
-            nearby_list = ast.literal_eval(nearby_list_raw)
-            list_ids = list(get_id_from_combined(nearby_list))
-            list_ids.append(suburbs_id)
-            return Posts.objects.filter(suburbs_id__in=list_ids)
-        else:
-            return Posts.objects.none()
+        return get_post_by_suburbs_id(suburbs_id)
 
     def retrieve(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        if queryset:
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(serializer.data)
-        else:
-            return Response({'error': error.ERROR_POST_NOT_FOUND_WITH_SUBURB}, status=404)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class RankingView(ListAPIView):
@@ -119,18 +112,16 @@ class RankingByPostIDApiView(RetrieveAPIView):
     def get_queryset(self):
         post_id = self.kwargs.get('post_id')
         post = Posts.objects.filter(postId=post_id).first()
-        if post:
-            return Ranking.objects.filter(post=post)
-        else:
-            return None
+
+        if not post:
+            raise NotFound(detail=error.ERROR_POST_NOT_FOUND)
+        return Ranking.objects.filter(post=post)
 
     def retrieve(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        if queryset:
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(serializer.data)
-        else:
-            return Response({'error': error.ERROR_POST_NOT_FOUND}, status=404)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class SuburbsApiListView(ListAPIView):
@@ -168,7 +159,6 @@ class SuburbsNearByPostcodeApiView(RetrieveAPIView):
             nearby_list = ast.literal_eval(nearby_list_raw)
 
             list_ids = get_id_from_combined(nearby_list)
-            print("List IDs: ", list_ids)
 
             return Response(list_ids)
         else:

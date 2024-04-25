@@ -2,12 +2,19 @@ from rest_framework import serializers
 from .models import Posts, Ranking, Point, Suburbs
 
 
+class RankingPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ranking
+        fields = ["daily_ranking", "weekly_ranking", "sum_ranking"]
+
+
 class PostsSerializer(serializers.ModelSerializer):
     combined = serializers.ReadOnlyField(source='suburbs.Combined')
+    ranking = RankingPostSerializer(read_only=True)
 
     class Meta:
         model = Posts
-        fields = ["id", "postId", "title", "description", "suburbs", "combined", "countView",
+        fields = ["id", "postId", "title", "description", "ranking", "suburbs", "combined", "countView",
                   "countLike", "countComment", "countShare", "createdAt", "updatedAt"]
 
 
