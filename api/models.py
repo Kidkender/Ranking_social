@@ -61,7 +61,7 @@ class Suburbs(models.Model):
 
 
 class Posts(models.Model):
-    postId = models.TextField(unique=True, max_length=255, validators=[
+    postId = models.CharField(unique=True, max_length=255, validators=[
                               validate_with_spectial_charactor])
     title = models.CharField(max_length=100)
     description = models.TextField()
