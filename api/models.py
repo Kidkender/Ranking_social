@@ -43,13 +43,12 @@ class Suburbs(models.Model):
     Postcode = models.IntegerField(default=0, validators=[
         MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
     Combined = models.TextField(max_length=100)
-    Latitude = models.DecimalField(default=0, max_digits=10, decimal_places=10)
-    Longitude = models.DecimalField(
-        default=0, max_digits=10, decimal_places=10)
-    CBD = models.DecimalField(default=0, max_digits=10, decimal_places=10)
+    Latitude = models.FloatField()
+    Longitude = models.FloatField()
+    CBD = models.FloatField()
     id_old = models.IntegerField(default=0, validators=[
         MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
-    Len = models.DecimalField(default=0, max_digits=10, decimal_places=10)
+    Len = models.FloatField()
     Nearby = models.TextField(null=True)
     Nearby_Dis = models.TextField(null=True)
     Nearby_Dis_List = models.TextField(null=True)
