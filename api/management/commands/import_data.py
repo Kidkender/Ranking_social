@@ -35,9 +35,14 @@ class Command(BaseCommand):
 
         for index, row in df.iterrows():
             nearby_dis = eval(row['Nearby_Dis'])
+            value_of_beach = 1 if row['Beach'] else 0
+            value_of_train = 1 if row['Train'] else 0
 
             instance = Suburbs(
-                id_suburb=row['id'],
+                SA1=row['SA1'],
+                SAL=row['SAL'],
+                SAL_CODE_2021=row['SAL_CODE_2021'],
+                Council=row['Council'],
                 Suburb=row['Suburb'],
                 State=row['State'],
                 Postcode=row['Postcode'],
@@ -45,13 +50,15 @@ class Command(BaseCommand):
                 Latitude=row['Latitude'],
                 Longitude=row['Longitude'],
                 CBD=row['CBD'],
-                id_old=row["id_old"],
-                Len=row["Len"],
+
                 Nearby_Dis=row['Nearby_Dis'],
                 Nearby=row['Nearby'],
                 Nearby_Dis_List=row['Nearby_Dis_List'],
                 Nearby_List=row['Nearby_List'],
                 Nearby_List_Codes=row['Nearby_List_Codes'],
+                Good_Schools=row['Good_Schools'],
+                Train=value_of_train,
+                Beach=value_of_beach,
             )
             instance.save()
 

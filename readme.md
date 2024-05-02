@@ -36,6 +36,12 @@ Activate env (at root project) cli:
   devenv\Scripts\activate
 ```
 
+If using MacOs:
+
+```bash
+  source dev\bin\activate
+```
+
 #### 3. Install library
 
 Open terminal inside folder ranking_social (The root folder is cloned from git)

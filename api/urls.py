@@ -23,6 +23,6 @@ urlpatterns = [
     path("suburbs", views.SuburbsApiListView.as_view(), name="suburbs_view"),
     path("suburbs/<int:pk>", views.SuburbsRetrieveApiView.as_view(),
          name="suburb-retrieve"),
-    path("suburbs/<int:id>/postcode", views.SuburbsNearByPostcodeApiView.as_view(),
+    path("suburbs/<int:pk>/postcode", views.SuburbsNearByPostcodeApiView.as_view(),
          name="suburb-retrieve-by-postcode")
 ]

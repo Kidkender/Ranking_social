@@ -13,12 +13,12 @@ import ast
 
 def get_id_from_combined(combined_list):
     suburbs_ids = Suburbs.objects.filter(
-        Combined__in=[item[0] for item in combined_list]).values_list('id', flat=True)
+        Combined__in=[item[0] for item in combined_list]).values_list('SA1', flat=True)
     return suburbs_ids
 
 
 def get_post_by_suburbs_id(suburbs_id: int) -> Posts:
-    suburb = Suburbs.objects.filter(id=suburbs_id).first()
+    suburb = Suburbs.objects.filter(SA1=suburbs_id).first()
     if not suburb:
         raise NotFound(detail=error.ERROR_SUBURB_NOT_FOUND)
 
@@ -68,7 +68,7 @@ class PostsNearByListApiView(ListAPIView):
         if not post:
             raise NotFound(detail=error.ERROR_POST_NOT_FOUND)
 
-        suburbs_id = post.suburbs.id
+        suburbs_id = post.suburbs.SA1
         return get_post_by_suburbs_id(suburbs_id)
 
     def retrieve(self, request, *args, **kwargs):
@@ -143,8 +143,8 @@ class SuburbsNearByPostcodeApiView(RetrieveAPIView):
     serializer_class = SuburbsSerializer
 
     def get_queryset(self):
-        suburbs_id = self.kwargs.get('id')
-        suburb = Suburbs.objects.filter(id=suburbs_id).first()
+        suburbs_id = self.kwargs.get('pk')
+        suburb = Suburbs.objects.filter(SA1=suburbs_id).first()
         if suburb:
             return suburb
         else:

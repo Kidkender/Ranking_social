@@ -36,11 +36,12 @@ class SuburbsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Suburbs
-        fields = ["id", "Suburb", "State",
+        fields = ["SA1", "SAL", "SAL_CODE_2021", "Suburb", "State",
                   "Postcode", "Combined",
                   "Latitude",
-                  "Longitude", "Nearby",
+                  "Longitude", "CBD", "Nearby",
                   "Nearby_Dis",
                   "Nearby_Dis_List",
                   "Nearby_List",
-                  "Nearby_List_Codes"]
+                  "Nearby_List_Codes",
+                  "Good_Schools", "Beach", "Train"]

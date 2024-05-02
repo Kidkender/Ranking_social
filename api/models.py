@@ -35,25 +35,32 @@ class Point(models.Model):
 
 
 class Suburbs(models.Model):
-    id_suburb = models.IntegerField(validators=[
+    SA1 = models.CharField(primary_key=True, unique=True,
+                           max_length=100, null=False)
+    SAL = models.IntegerField(validators=[
         MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
+    SAL_CODE_2021 = models.CharField(max_length=100, blank=False)
+    Council = models.TextField()
 
     Suburb = models.CharField(max_length=100)
     State = models.CharField(max_length=10)
     Postcode = models.IntegerField(default=0, validators=[
         MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
-    Combined = models.TextField(max_length=100)
+    Combined = models.TextField(max_length=150)
+
     Latitude = models.FloatField()
     Longitude = models.FloatField()
     CBD = models.FloatField()
-    id_old = models.IntegerField(default=0, validators=[
-        MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
-    Len = models.FloatField()
+
     Nearby = models.TextField(null=True)
     Nearby_Dis = models.TextField(null=True)
     Nearby_Dis_List = models.TextField(null=True)
     Nearby_List = models.TextField(null=True)
     Nearby_List_Codes = models.TextField(null=True)
+
+    Good_Schools = models.FloatField(default=0)
+    Beach = models.BooleanField(default=False)
+    Train = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.Combined}'
@@ -77,7 +84,7 @@ class Posts(models.Model):
     updatedAt = models.DateTimeField(auto_now=True)
 
     suburbs = models.ForeignKey(
-        'Suburbs', on_delete=models.CASCADE, default=get_default_suburb)
+        'Suburbs', on_delete=models.CASCADE)
 
     @property
     def ranking(self):
