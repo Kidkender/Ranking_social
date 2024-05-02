@@ -35,8 +35,9 @@ class Command(BaseCommand):
 
         for index, row in df.iterrows():
             nearby_dis = eval(row['Nearby_Dis'])
-            value_of_beach = 1 if row['Beach'] else 0
-            value_of_train = 1 if row['Train'] else 0
+            value_of_beach = row['Beach'] != 0 and not pd.isna(row['Beach'])
+
+            value_of_train = row['Train'] != 0 and not pd.isna(row['Train'])
 
             instance = Suburbs(
                 SA1=row['SA1'],
@@ -56,7 +57,7 @@ class Command(BaseCommand):
                 Nearby_Dis_List=row['Nearby_Dis_List'],
                 Nearby_List=row['Nearby_List'],
                 Nearby_List_Codes=row['Nearby_List_Codes'],
-                Good_Schools=row['Good_Schools'],
+                Good_Schools=round(row['Good_Schools']),
                 Train=value_of_train,
                 Beach=value_of_beach,
             )
