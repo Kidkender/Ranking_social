@@ -57,7 +57,7 @@ class Command(BaseCommand):
                 Nearby_Dis_List=row['Nearby_Dis_List'],
                 Nearby_List=row['Nearby_List'],
                 Nearby_List_Codes=row['Nearby_List_Codes'],
-                Good_Schools=round(row['Good_Schools']),
+                Good_Schools=round(row['Good_Schools'], 1),
                 Train=value_of_train,
                 Beach=value_of_beach,
             )
