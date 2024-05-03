@@ -58,7 +58,8 @@ class Suburbs(models.Model):
     Nearby_List = models.TextField(null=True)
     Nearby_List_Codes = models.TextField(null=True)
 
-    Good_Schools = models.FloatField(default=0)
+    Good_Schools = models.FloatField(default=0, validators=[
+        MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
     Beach = models.BooleanField(default=False)
     Train = models.BooleanField(default=False)
 

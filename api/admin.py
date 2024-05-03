@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import Posts, Suburbs, Ranking
 
-# Register your models here.
+
+admin.site.register(Posts)
+admin.site.register(Suburbs)
+admin.site.register(Ranking)
