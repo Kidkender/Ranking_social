@@ -4,6 +4,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, Retrieve
 from .models import Posts, Ranking, Point, Suburbs
 from .serializers import PostsSerializer, RankingSerializer, PointSerializer, SuburbsSerializer
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import pagination
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import SuburbsFilter
 from rest_framework.exceptions import NotFound
@@ -29,9 +30,17 @@ def get_post_by_suburbs_id(suburbs_id: int) -> Posts:
     return Posts.objects.filter(suburbs_id__in=list_ids)
 
 
+class CustomPagination(pagination.PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+    page_query_param = 'p'
+
+
 class PostListCreate(ListCreateAPIView):
     queryset = Posts.objects.all()
     serializer_class = PostsSerializer
+    pagination_class = CustomPagination
 
     def delete(self, request, *args, **kwargs):
         Posts.objects.all().delete()
@@ -46,9 +55,12 @@ class PostRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
 
 class FindPostsBySuburbsIdApiView(ListAPIView):
     serializer_class = PostsSerializer
+    pagination_class = CustomPagination
 
     def get_queryset(self):
-        suburbs_id = self.kwargs.get('id')
+        suburbs_id = self.request.query_params.get('id')
+        if not suburbs_id:
+            return Posts.objects.all()
         return get_post_by_suburbs_id(suburbs_id)
 
     def retrieve(self, request, *args, **kwargs):
@@ -127,8 +139,7 @@ class RankingByPostIDApiView(RetrieveAPIView):
 class SuburbsApiListView(ListAPIView):
     queryset = Suburbs.objects.all()
     serializer_class = SuburbsSerializer
-    pagination_class = PageNumberPagination
-    pagination_class.page_size = 10
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
     filterset_class = SuburbsFilter
 

@@ -68,11 +68,19 @@ class Suburbs(models.Model):
 
 
 class Posts(models.Model):
-    postId = models.CharField(unique=True, max_length=255, validators=[
+    TYPE_POST_CHOICE = {
+        "bl": "Blog",
+        "vi": "Video",
+        "li": "Listing"
+    }
+
+    postId = models.CharField(primary_key=True, unique=True, null=False, blank=False, max_length=255, validators=[
                               validate_with_spectial_charactor])
     title = models.CharField(max_length=100)
     description = models.TextField()
-
+    type = models.CharField(choices=TYPE_POST_CHOICE, default=TYPE_POST_CHOICE.get('bl'),
+                            null=False, blank=False, max_length=50)
+    hashtag = models.CharField(max_length=100, null=True, blank=True)
     countView = models.IntegerField(
         default=0, validators=[MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
     countLike = models.IntegerField(
@@ -95,7 +103,7 @@ class Posts(models.Model):
             return None
 
     def __str__(self) -> str:
-        return self.title
+        return self.postId
 
     def calculate_ranking(self) -> int:
         point = Point.objects.first()
