@@ -4,15 +4,15 @@ from . import views
 
 urlpatterns = [
     path("posts", views.PostListCreate.as_view(), name='post_view'),
-    path("posts/<int:pk>/", views.PostRetrieveUpdateDestroy.as_view(), name="update"),
+    path("posts/<str:pk>/", views.PostRetrieveUpdateDestroy.as_view(), name="update"),
     path('posts/suburbs', views.FindPostsBySuburbsIdApiView.as_view(),
          name="get-posts-by-suburbs"),
-    path('posts/<int:id>/suburbs', views.PostsNearByListApiView.as_view(),
+    path('posts/<str:id>/suburbs', views.PostsNearByListApiView.as_view(),
          name="get-posts-nearby-list"),
     path("ranking", views.RankingView.as_view(), name="ranking_view"),
-    path("ranking/<int:pk>/", views.RankingRetrieveByIDView.as_view(),
+    path("ranking/<str:pk>", views.RankingRetrieveByIDView.as_view(),
          name="retrieve_by_id_view"),
-    path("ranking/post/<int:post_id>/", views.RankingRetrieveByPostView.as_view(),
+    path("ranking/post/<str:post_id>/", views.RankingRetrieveByPostView.as_view(),
          name="retrieve_by_post_id_view"),
 
     path('ranking/postid/<post_id>/',
@@ -21,8 +21,11 @@ urlpatterns = [
     path("point", views.PointApiView.as_view(), name='point_view'),
     path("point/<int:pk>/", views.PointUpdateApiView.as_view(), name='point_update'),
     path("suburbs", views.SuburbsApiListView.as_view(), name="suburbs_view"),
-    path("suburbs/<int:pk>", views.SuburbsRetrieveApiView.as_view(),
+    path("suburbs/<str:pk>", views.SuburbsRetrieveApiView.as_view(),
          name="suburb-retrieve"),
-    path("suburbs/<int:pk>/postcode", views.SuburbsNearByPostcodeApiView.as_view(),
-         name="suburb-retrieve-by-postcode")
+    path("suburbs/<str:pk>/postcode", views.SuburbsNearByPostcodeApiView.as_view(),
+         name="suburb-retrieve-by-postcode"),
+    path("users", views.UserListCreateApiView.as_view(), name="users_create_list"),
+    path("users/<str:pk>", views.UserRetrieveDestroyApiView.as_view(),
+         name="users_retrieve_destroy_view")
 ]

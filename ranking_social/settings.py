@@ -52,18 +52,29 @@ CRON_CLASSES = [
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
         },
     },
     'loggers': {
-        '': {
+        'django': {
             'handlers': ['console'],
             'level': 'INFO',
-            'propagate': True,
         },
+        'ranking_social': {
+            'handlers': ['console'],
+            'level': 'DEBUG'
+        }
+
     },
 }
 

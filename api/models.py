@@ -69,16 +69,16 @@ class Suburbs(models.Model):
 
 class Posts(models.Model):
     TYPE_POST_CHOICE = {
-        "bl": "Blog",
-        "vi": "Video",
-        "li": "Listing"
+        "blog": "blog",
+        "video": "video",
+        "listing": "listing"
     }
 
     postId = models.CharField(primary_key=True, unique=True, null=False, blank=False, max_length=255, validators=[
                               validate_with_spectial_charactor])
-    title = models.CharField(max_length=100)
-    description = models.TextField()
-    type = models.CharField(choices=TYPE_POST_CHOICE, default=TYPE_POST_CHOICE.get('bl'),
+    title = models.CharField(max_length=100, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    type = models.CharField(choices=TYPE_POST_CHOICE, default=TYPE_POST_CHOICE.get('blog'),
                             null=False, blank=False, max_length=50)
     hashtag = models.CharField(max_length=100, null=True, blank=True)
     countView = models.IntegerField(
@@ -94,6 +94,7 @@ class Posts(models.Model):
 
     suburbs = models.ForeignKey(
         'Suburbs', on_delete=models.CASCADE)
+    user = models.ForeignKey('Users', on_delete=models.CASCADE)
 
     @property
     def ranking(self):
@@ -127,3 +128,17 @@ class Ranking(models.Model):
 
     def __str__(self) -> str:
         return f"Ranking - Post: {self.post}, Daily Ranking: {self.daily_ranking}, Weekly Ranking: {self.weekly_ranking}, Sum Ranking: {self.sum_ranking}"
+
+
+class Users(models.Model):
+    userId = models.CharField(
+        primary_key=True, max_length=100, null=False, blank=False, unique=True, validators=[validate_with_spectial_charactor])
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return self.userId
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        logging.info(f'Create user {self.userId} successfully.')

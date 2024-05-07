@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Posts, Ranking, Point, Suburbs
+from .models import Posts, Ranking, Point, Suburbs, Users
 
 
 class RankingPostSerializer(serializers.ModelSerializer):
@@ -14,8 +14,17 @@ class PostsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Posts
-        fields = ["postId", "title", "description", "type", "hashtag", "ranking", "suburbs", "combined", "countView",
+        fields = ["postId", "title", "description", "type", "hashtag", "ranking", "user", "suburbs", "combined", "countView",
                   "countLike", "countComment", "countShare", "createdAt", "updatedAt"]
+
+
+class PostSuburbsSerializer(serializers.ModelSerializer):
+    combined = serializers.ReadOnlyField(source='suburbs.Combined')
+    ranking = RankingPostSerializer(read_only=True)
+
+    class Meta:
+        model = Posts
+        fields = ["postId", "ranking", "suburbs", "combined"]
 
 
 class RankingSerializer(serializers.ModelSerializer):
@@ -45,3 +54,10 @@ class SuburbsSerializer(serializers.ModelSerializer):
                   "Nearby_List",
                   "Nearby_List_Codes",
                   "Good_Schools", "Beach", "Train"]
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Users
+
+        fields = ["userId", "createdAt", "updatedAt"]
