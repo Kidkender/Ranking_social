@@ -76,11 +76,11 @@ class Posts(models.Model):
 
     postId = models.CharField(primary_key=True, unique=True, null=False, blank=False, max_length=255, validators=[
                               validate_with_spectial_charactor])
-    title = models.CharField(max_length=100, blank=True, null=True)
+    title = models.CharField(max_length=200, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     type = models.CharField(choices=TYPE_POST_CHOICE, default=TYPE_POST_CHOICE.get('blog'),
                             null=False, blank=False, max_length=50)
-    hashtag = models.CharField(max_length=100, null=True, blank=True)
+    hashtag = models.CharField(max_length=255, null=True, blank=True)
     countView = models.IntegerField(
         default=0, validators=[MinValueValidator(0, VALIDATOR_VALUE_NON_NEGATIVE)])
     countLike = models.IntegerField(
@@ -93,7 +93,7 @@ class Posts(models.Model):
     updatedAt = models.DateTimeField(auto_now=True)
 
     suburbs = models.ForeignKey(
-        'Suburbs', on_delete=models.CASCADE)
+        'Suburbs', on_delete=models.CASCADE, null=True, blank=True)
     user = models.ForeignKey('Users', on_delete=models.CASCADE)
 
     @property

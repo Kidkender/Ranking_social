@@ -8,13 +8,13 @@ class RankingPostSerializer(serializers.ModelSerializer):
         fields = ["daily_ranking", "weekly_ranking", "sum_ranking"]
 
 
+# combined = serializers.ReadOnlyField(source='suburbs.Combined')
 class PostsSerializer(serializers.ModelSerializer):
-    combined = serializers.ReadOnlyField(source='suburbs.Combined')
     ranking = RankingPostSerializer(read_only=True)
 
     class Meta:
         model = Posts
-        fields = ["postId", "title", "description", "type", "hashtag", "ranking", "user", "suburbs", "combined", "countView",
+        fields = ["postId", "title", "description", "type", "hashtag", "ranking", "user", "suburbs", "countView",
                   "countLike", "countComment", "countShare", "createdAt", "updatedAt"]
 
 

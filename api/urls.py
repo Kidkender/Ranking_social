@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path("posts", views.PostListCreate.as_view(), name='post_view'),
+    path("posts/get-posts", views.PostsListApiView.as_view(), name='posts_get_view'),
     path("posts/<str:pk>/", views.PostRetrieveUpdateDestroy.as_view(), name="update"),
     path('posts/suburbs', views.FindPostsBySuburbsIdApiView.as_view(),
          name="get-posts-by-suburbs"),
