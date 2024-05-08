@@ -17,7 +17,7 @@ from .filters import PostsFilter, SuburbsFilter
 from .models import Point, Posts, Ranking, Suburbs, Users
 from .serializers import (PointSerializer, PostsSerializer,
                           PostSuburbsSerializer, RankingSerializer,
-                          SuburbsSerializer, UserSerializer)
+                          SuburbsSerializer, UserSerializer, PostUpdateSerializer)
 
 logger = logging.getLogger(__name__)
 
@@ -207,14 +207,24 @@ class PostListCreate(ListCreateAPIView):
             return Response({"message": "postId already exists, no action taken."}, status=status.HTTP_200_OK)
 
         if "suburbs" in request.data:
-            suburbs_raw = request.data.pop("suburbs")
-            suburb_converted = preprocessing_data.convert_raw_suburbs(
-                suburbs_raw)
-            suburb = Suburbs.objects.filter(Combined=suburb_converted).first()
-            if suburb:
-                request.data['suburbs'] = suburb.SA1
+            data_copy = request.data.copy()
+            suburbs_raw = data_copy.get("suburbs")
+            if suburbs_raw is not None:
+                del data_copy["suburbs"]
+                print("suburbs_raw: ", type(suburbs_raw))
+                suburb_converted = preprocessing_data.convert_raw_suburbs(
+                    suburbs_raw)
+                print("suburb_converted: ", suburb_converted)
+                suburb = Suburbs.objects.filter(
+                    Combined=suburb_converted).first()
+                if suburb:
+                    data_copy['suburbs'] = suburb.SA1
+                else:
+                    data_copy['suburbs'] = None
 
-        serializer = self.get_serializer(data=request.data)
+            request._request.POST = data_copy
+
+        serializer = self.get_serializer(data=data_copy)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
@@ -295,7 +305,7 @@ class PostListCreate(ListCreateAPIView):
 
 class PostRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
     queryset = Posts.objects.all()
-    serializer_class = PostsSerializer
+    serializer_class = PostUpdateSerializer
     lookup_field = "pk"
 
 
