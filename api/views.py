@@ -1,19 +1,23 @@
-from rest_framework import status
+import ast
+import logging
+
+from django.db.models import Case, F, IntegerField, Q, Value, When
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import pagination, status
+from rest_framework.exceptions import NotFound
+from rest_framework.generics import (ListAPIView, ListCreateAPIView,
+                                     RetrieveAPIView, RetrieveUpdateAPIView,
+                                     RetrieveUpdateDestroyAPIView)
 from rest_framework.response import Response
-from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, RetrieveUpdateAPIView
-from .models import Posts, Ranking, Point, Suburbs, Users
-from .serializers import PostsSerializer, RankingSerializer, PointSerializer, SuburbsSerializer, UserSerializer, PostSuburbsSerializer
-from django.db.models import Q, F, Value, IntegerField, Case, When
 from rest_framework.views import APIView
 
-from rest_framework import pagination
-from django_filters.rest_framework import DjangoFilterBackend
-from .filters import SuburbsFilter, PostsFilter
-from rest_framework.exceptions import NotFound
 from .common.constants import error
-import ast
-from django.db.models import Case, When, Value, IntegerField
-import logging
+from .common.helpers import preprocessing_data
+from .filters import PostsFilter, SuburbsFilter
+from .models import Point, Posts, Ranking, Suburbs, Users
+from .serializers import (PointSerializer, PostsSerializer,
+                          PostSuburbsSerializer, RankingSerializer,
+                          SuburbsSerializer, UserSerializer)
 
 logger = logging.getLogger(__name__)
 
@@ -92,18 +96,6 @@ def get_post_by_suburbs_id(suburbs_id: str) -> Posts:
     return sorted_posts
 
 
-def convert_raw_suburbs(raw_suburbs) -> str:
-    suburb = raw_suburbs.get("suburb", "")
-    state = raw_suburbs.get("state", "")
-    post_code = raw_suburbs.get("postCode", "")
-
-    if suburb and state and post_code:
-        combined = f"{suburb}, {state} {post_code}"
-        return combined
-    else:
-        return None
-
-
 class CustomPagination(pagination.PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
@@ -123,12 +115,12 @@ class PostsListApiView(APIView):
         hashTag = request.data.get("hashtag", None)
         suburbs = request.data.get("suburbs", [])
         type = request.data.get("type", None)
-        excludePosts = request.data.get("excludePosts", [])
+        excludePosts = request.data.get("execludePosts", [])
 
         queryset = self.get_queryset()
 
-        if userId is not None:
-            queryset = queryset.filter(user=userId)
+        # if userId is not None:
+        #     queryset = queryset.filter(user=userId)
         if hashTag is not None:
             hashtags = hashTag.split()
             for tag in hashtags:
@@ -140,7 +132,7 @@ class PostsListApiView(APIView):
         if suburbs:
             combineds = []
             for suburb_raw in suburbs:
-                combined = convert_raw_suburbs(suburb_raw)
+                combined = preprocessing_data.convert_raw_suburbs(suburb_raw)
                 combineds.append([combined])
 
             suburbs_ids = list(get_id_from_combined(combineds))
@@ -216,7 +208,8 @@ class PostListCreate(ListCreateAPIView):
 
         if "suburbs" in request.data:
             suburbs_raw = request.data.pop("suburbs")
-            suburb_converted = convert_raw_suburbs(suburbs_raw)
+            suburb_converted = preprocessing_data.convert_raw_suburbs(
+                suburbs_raw)
             suburb = Suburbs.objects.filter(Combined=suburb_converted).first()
             if suburb:
                 request.data['suburbs'] = suburb.SA1
@@ -247,7 +240,7 @@ class PostListCreate(ListCreateAPIView):
         if suburbs:
             combineds = []
             for suburb_raw in suburbs:
-                combined = convert_raw_suburbs(suburb_raw)
+                combined = preprocessing_data.convert_raw_suburbs(suburb_raw)
                 combineds.append([combined])
 
             suburbs_ids = list(get_id_from_combined(combineds))

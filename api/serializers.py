@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Posts, Ranking, Point, Suburbs, Users
+
+from .models import Point, Posts, Ranking, Suburbs, Users
 
 
 class RankingPostSerializer(serializers.ModelSerializer):

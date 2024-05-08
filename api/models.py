@@ -1,10 +1,13 @@
-from django.db import models
-from django.core.validators import MinValueValidator
-from django.core.exceptions import ValidationError
-from .common.constants.error import VALIDATOR_VALUE_NON_NEGATIVE, VALIDATOR_SPECTIAL_CHARACTER, VALIDATOR_ONLY_NUMBER
-import re
 import logging
+import re
 
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
+from django.db import models
+
+from .common.constants.error import (VALIDATOR_ONLY_NUMBER,
+                                     VALIDATOR_SPECTIAL_CHARACTER,
+                                     VALIDATOR_VALUE_NON_NEGATIVE)
 
 logger = logging.getLogger(__name__)
 

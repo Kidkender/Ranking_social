@@ -1,5 +1,6 @@
 import django_filters
-from .models import Suburbs, Posts
+
+from .models import Posts, Suburbs
 
 
 class SuburbsFilter(django_filters.FilterSet):

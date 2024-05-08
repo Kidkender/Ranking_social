@@ -1,6 +1,8 @@
-from django_cron import CronJobManager, CronJobBase, Schedule
-from .models import Posts, Ranking
 import logging
+
+from django_cron import CronJobBase, CronJobManager, Schedule
+
+from .models import Ranking
 
 reset_rank_point = 0
 RUN_AT_TIMES = ['00:00']
