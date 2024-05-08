@@ -4,7 +4,7 @@ import logging
 from django.db.models import Case, F, IntegerField, Q, Value, When
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import pagination, status
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.generics import (ListAPIView, ListCreateAPIView,
                                      RetrieveAPIView, RetrieveUpdateAPIView,
                                      RetrieveUpdateDestroyAPIView)
@@ -16,8 +16,8 @@ from .common.helpers import preprocessing_data
 from .filters import PostsFilter, SuburbsFilter
 from .models import Point, Posts, Ranking, Suburbs, Users
 from .serializers import (PointSerializer, PostsSerializer,
-                          PostSuburbsSerializer, RankingSerializer,
-                          SuburbsSerializer, UserSerializer, PostUpdateSerializer)
+                          PostSuburbsSerializer, PostUpdateSerializer,
+                          RankingSerializer, SuburbsSerializer, UserSerializer)
 
 logger = logging.getLogger(__name__)
 
@@ -96,11 +96,28 @@ def get_post_by_suburbs_id(suburbs_id: str) -> Posts:
     return sorted_posts
 
 
+def get_post_sort_by_ranking():
+    annotated_posts = Posts.objects.annotate(
+        sum_ranking=F('ranking__sum_ranking'))
+    sorted_posts = annotated_posts.order_by('-sum_ranking')
+
+    return sorted_posts
+
+
 class CustomPagination(pagination.PageNumberPagination):
+
     page_size = 10
-    page_size_query_param = 'page_size'
+    page_size_query_param = 'size'
     max_page_size = 1000
-    page_query_param = 'p'
+    page_query_param = 'page'
+
+    def get_page_number(self, request, paginator):
+        page_number = request.query_params.get(self.page_query_param) or 0
+
+        if page_number in self.last_page_strings:
+            page_number = paginator.num_pages
+        new_page = int(page_number) + 1
+        return str(new_page)
 
 
 class PostsListApiView(APIView):
@@ -110,39 +127,73 @@ class PostsListApiView(APIView):
     def get_queryset(self):
         return Posts.objects.all()
 
+    def get_type(self, data):
+        return type(data)
+
     def post(self, request, *args, **kwargs):
-        userId = request.data.get("userId", None)
+        queryset = self.get_queryset()
+
+        if not request.data:
+            queryset_ranking = get_post_sort_by_ranking()
+            paginator = self.pagination_class()
+            page = paginator.paginate_queryset(queryset_ranking, request)
+            serializer = self.serializer_class(
+                page, many=True)
+
+            return paginator.get_paginated_response(serializer.data)
+
         hashTag = request.data.get("hashtag", None)
         suburbs = request.data.get("suburbs", [])
         type = request.data.get("type", None)
-        excludePosts = request.data.get("execludePosts", [])
+        excludePosts = request.data.get("excludePosts", [])
+        search = request.data.get("search", None)
+        data_queryset = []
 
-        queryset = self.get_queryset()
-
-        # if userId is not None:
-        #     queryset = queryset.filter(user=userId)
-        if hashTag is not None:
-            hashtags = hashTag.split()
-            for tag in hashtags:
-                queryset = queryset.filter(hashtag__icontains=tag)
-        if type is not None:
-            queryset = queryset.filter(type=type)
-        if excludePosts:
-            queryset = queryset.exclude(postId__in=excludePosts)
+        change = False
         if suburbs:
             combineds = []
             for suburb_raw in suburbs:
-                combined = preprocessing_data.convert_raw_suburbs(suburb_raw)
-                combineds.append([combined])
-
+                combineds.append([suburb_raw])
             suburbs_ids = list(get_id_from_combined(combineds))
-            queryset = self.filter_by_list_suburbs(queryset, suburbs_ids)
 
-        if not queryset.exists():
-            return Response([], status=status.HTTP_200_OK)
+            data_queryset = self.filter_by_list_suburbs(queryset, suburbs_ids)
+
+            queryset = queryset.filter(postId__in=data_queryset)
+
+        if hashTag is not None:
+            hashtags = hashTag.split()
+            for tag in hashtags:
+                change = True
+
+                queryset = queryset.filter(hashtag__icontains=tag)
+        if type is not None:
+
+            change = True
+            queryset = queryset.filter(type=type)
+        if excludePosts:
+
+            change = True
+            queryset = queryset.exclude(postId__in=excludePosts)
+
+        if search is not None:
+            change = True
+            queryset = queryset.filter(Q(title__icontains=search) | Q(
+                description__icontains=search) | Q(hashtag__icontains=search))
+
+        if not change and not queryset:
+            queryset_ranking = get_post_sort_by_ranking()
+            paginator = self.pagination_class()
+            page = paginator.paginate_queryset(queryset_ranking, request)
+            serializer = self.serializer_class(
+                page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        annotated_posts = queryset.annotate(
+            sum_ranking=F('ranking__sum_ranking'))
+        sorted_posts = annotated_posts.order_by('-sum_ranking')
 
         paginator = self.pagination_class()
-        page = paginator.paginate_queryset(queryset, request)
+        page = paginator.paginate_queryset(sorted_posts, request)
         serializer = self.serializer_class(
             page, many=True)
 
@@ -186,7 +237,7 @@ class PostsListApiView(APIView):
 
 
 class PostListCreate(ListCreateAPIView):
-    queryset = Posts.objects.all()
+    queryset = Posts.objects.all().order_by('createdAt')
     serializer_class = PostsSerializer
     pagination_class = CustomPagination
 
@@ -211,16 +262,17 @@ class PostListCreate(ListCreateAPIView):
             suburbs_raw = data_copy.get("suburbs")
             if suburbs_raw is not None:
                 del data_copy["suburbs"]
-                print("suburbs_raw: ", type(suburbs_raw))
                 suburb_converted = preprocessing_data.convert_raw_suburbs(
                     suburbs_raw)
-                print("suburb_converted: ", suburb_converted)
-                suburb = Suburbs.objects.filter(
-                    Combined=suburb_converted).first()
-                if suburb:
-                    data_copy['suburbs'] = suburb.SA1
+                suburb = Suburbs.objects.none()
+                if isinstance(suburbs_raw, str):
+                    suburb = Suburbs.objects.filter(SA1=suburbs_raw).first()
                 else:
-                    data_copy['suburbs'] = None
+
+                    suburb = Suburbs.objects.filter(
+                        Combined=suburb_converted).first()
+
+                data_copy['suburbs'] = suburb.SA1 if suburb else None
 
             request._request.POST = data_copy
 
@@ -231,6 +283,7 @@ class PostListCreate(ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def filter_queryset(self, queryset):
+
         userId = self.request.data.get("userId", None)
         hashTag = self.request.data.get("hashtag", None)
         suburbs = self.request.data.get("suburbs", [])
@@ -333,12 +386,15 @@ class PostsNearByListApiView(ListAPIView):
 
     def get_queryset(self):
         post_id = self.kwargs.get('id')
-        post = Posts.objects.filter(id=post_id).first()
+        post = Posts.objects.filter(postId=post_id).first()
 
         if not post:
             raise NotFound(detail=error.ERROR_POST_NOT_FOUND)
 
-        suburbs_id = post.suburbs.SA1
+        if not post.suburbs:
+            raise ParseError(detail=error.ERROR_SUBURB_NOT_EXIST, code=400)
+
+        suburbs_id = post.suburbs
         return get_post_by_suburbs_id(suburbs_id)
 
     def retrieve(self, request, *args, **kwargs):
