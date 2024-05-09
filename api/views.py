@@ -160,6 +160,9 @@ class PostsListApiView(APIView):
 
             queryset = queryset.filter(postId__in=data_queryset)
 
+        if not queryset:
+            queryset = get_post_sort_by_ranking()
+
         if hashTag is not None:
             hashtags = hashTag.split()
             for tag in hashtags:
