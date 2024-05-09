@@ -10,7 +10,6 @@ class RankingPostSerializer(serializers.ModelSerializer):
 
 
 class PostUpdateSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(read_only=True)
     postId = serializers.ReadOnlyField()
     ranking = RankingPostSerializer(read_only=True)
 
@@ -18,6 +17,12 @@ class PostUpdateSerializer(serializers.ModelSerializer):
         model = Posts
         fields = ["postId", "title", "description", "type", "hashtag", "ranking", "user", "suburbs", "countView",
                   "countLike", "countComment", "countShare", "createdAt", "updatedAt"]
+
+        read_only_fields = ["postId", "user"]
+
+    def update(self, instance, validated_data):
+        validated_data["user"] = instance.user
+        return super().update(instance, validated_data)
 
 
 class PostsSerializer(serializers.ModelSerializer):

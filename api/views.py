@@ -150,6 +150,7 @@ class PostsListApiView(APIView):
         data_queryset = []
 
         change = False
+        have_suburbs = False
         if suburbs:
             combineds = []
             for suburb_raw in suburbs:
@@ -157,8 +158,11 @@ class PostsListApiView(APIView):
             suburbs_ids = list(get_id_from_combined(combineds))
 
             data_queryset = self.filter_by_list_suburbs(queryset, suburbs_ids)
-
+            post_ids_ordered = [post.postId for post in data_queryset]
             queryset = queryset.filter(postId__in=data_queryset)
+
+            if queryset:
+                have_suburbs = True
 
         if not queryset:
             queryset = get_post_sort_by_ranking()
@@ -195,8 +199,14 @@ class PostsListApiView(APIView):
             sum_ranking=F('ranking__sum_ranking'))
         sorted_posts = annotated_posts.order_by('-sum_ranking')
 
+        if have_suburbs:
+            queryset = queryset.filter(postId__in=post_ids_ordered).order_by(
+                Case(*[When(postId=post_id, then=pos) for pos, post_id in enumerate(post_ids_ordered)]))
+
+        posts_response = queryset if have_suburbs else sorted_posts
+
         paginator = self.pagination_class()
-        page = paginator.paginate_queryset(sorted_posts, request)
+        page = paginator.paginate_queryset(posts_response, request)
         serializer = self.serializer_class(
             page, many=True)
 
@@ -359,10 +369,45 @@ class PostListCreate(ListCreateAPIView):
         return sorted_posts
 
 
+def preprocess_suburb_from_request(suburb_raw):
+    suburb_converted = preprocessing_data.convert_raw_suburbs(
+        suburb_raw)
+    suburb = Suburbs.objects.none()
+    if isinstance(suburb_raw, str):
+        suburb = Suburbs.objects.filter(SA1=suburb_raw).first()
+    else:
+
+        suburb = Suburbs.objects.filter(
+            Combined=suburb_converted).first()
+    return suburb if suburb else None
+
+
 class PostRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
     queryset = Posts.objects.all()
     serializer_class = PostUpdateSerializer
     lookup_field = "pk"
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user_id = instance.user_id
+
+        data_copy = request.data.copy()
+
+        data_copy['user_id'] = user_id
+        if "suburbs" in request.data:
+
+            suburbs_raw = data_copy.get("suburbs")
+            if suburbs_raw is not None:
+                del data_copy["suburbs"]
+                suburb = preprocess_suburb_from_request(suburbs_raw)
+                data_copy['suburbs'] = suburb.SA1 if suburb else None
+
+        serializer = self.get_serializer(
+            instance, data=data_copy, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class FindPostsBySuburbsIdApiView(ListAPIView):
