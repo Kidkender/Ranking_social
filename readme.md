@@ -9,12 +9,21 @@ The ranking system for all user content posted on social networks is based on th
 - Calculate ranking
 - Filter ranking by location
 - Schedule ranking daily, weekly
+- Calculate ranking of posts then return by suburb and nearby suburb
 
 ## 🔧Installation
 
+### If you already have docker on your computer, you can quickly deploy as follows
+
+```bash
+  docker-compose up --build
+```
+
+### On the contrary, if you do not have docker, you can set it up as follows
+
 #### 1. Setup python enviroment, python version 3.11 up
 
-You can download python at link https://www.python.org/downloads/
+You can download python at link <https://www.python.org/downloads/>
 
 After installation you can check, open terminal
 
@@ -68,6 +77,9 @@ Then, you will need to add the following environment variables to your .env file
 `MYSQL_DATABASE`
 `MYSQL_ROOT_PASSWORD`
 `MYSQL_PASSWORD`
+
+`DB_HOST`
+`DB_PORT`
 
 Above is variables relation your database and secret key for run this app.
 

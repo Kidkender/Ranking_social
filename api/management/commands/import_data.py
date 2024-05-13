@@ -9,6 +9,7 @@ load_dotenv()
 DB = os.environ.get('MYSQL_DATABASE')
 username = os.environ.get('MYSQL_USER')
 password = os.environ.get('MYSQL_PASSWORD')
+host = os.environ.get('DB_HOST')
 
 
 class Command(BaseCommand):
@@ -29,7 +30,7 @@ class Command(BaseCommand):
 
         df = pd.read_excel(excel_path)
 
-        db = MySQLdb.connect(host="localhost", user=username,
+        db = MySQLdb.connect(host=host, user=username,
                              passwd=password, db=DB)
         cursor = db.cursor()
 

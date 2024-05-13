@@ -1,22 +1,36 @@
 version: "3.8"
 services:
-  # db:
-  #   image: mysql:latest
-  #   container_name: mysql
-  #   restart: always
-  #   command: mysqld --default-authentication-plugin=mysql_native_password
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-  #     MYSQL_DATABASE: ${MYSQL_DATABASE}
-  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-  #   ports:
-  #     - "3306:3306"
-  #   expose:
-  #     - "3306"
-  #   volumes:
-  #     - data:/var/lib/mysql # Lưu trữ dữ liệu MySQL trong volume
+  db:
+    image: mysql:latest
+    container_name: mysql
+    restart: always
+
+    volumes:
+      - data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    expose:
+      - "3306"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysql",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${MYSQL_ROOT_PASSWORD}",
+          "-e",
+          "SELECT 1",
+        ]
+      timeout: 20s
+      retries: 10
 
   backend:
     container_name: django_social_ranking
@@ -24,9 +38,10 @@ services:
       context: .
       dockerfile: Dockerfile
     command: >
-      sh -c "python manage.py migrate &&
-             python manage.py import_data suburbs_3.xlsx &&
-             python manage.py runserver"
+      sh -c "python3 manage.py makemigrations && 
+             python3 manage.py migrate --noinput &&
+             python3 manage.py import_data suburbs_10.xlsx &&
+             python manage.py runserver 0.0.0.0:8000"
     restart: always
     volumes:
       - .:/app
@@ -34,8 +49,8 @@ services:
       - "8000:8000"
     env_file:
       - .env
-    # depends_on:
-    #   - db
+    depends_on:
+      - db
 
 volumes:
   data:
