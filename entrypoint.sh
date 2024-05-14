@@ -1,25 +1,21 @@
-#!/bin/ash
-if [ "$DATABASE" = "mysql"]
-then
-    echo "Waiting for mysql"
-    while ! nc -z $SQL_HOST $SQL_PORT; do
-        sleep 0.1
-    done 
-        echo "Start mysql successfully"
+#!/bin/sh
 
-echo "Make new migrations"
+# Wait for the database to be ready
+echo "Waiting for MySQL..."
+while ! nc -z db 3306; do
+  sleep 1
+done
+echo "MySQL is ready!"
+
+# Run Django migrations
 python3 manage.py makemigrations
-
-echo "Apply database migrations"
 python3 manage.py migrate --noinput
 
-echo "Apply import data from excel"
+# Import data
 python3 manage.py import_data suburbs_10.xlsx
 
-echo "Collect static files"
+# Collect static files
 python3 manage.py collectstatic --noinput --ignore static
 
-echo "Start server" 
-python manage.py runserver --bind 0.0.0.0:8000"
-
-exec "$@"
+# Start Gunicorn
+gunicorn ranking_social.wsgi:application --bind 0.0.0.0:8000
