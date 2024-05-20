@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def validate_with_spectial_charactor(_value):
-    if not re.match(r'^[a-zA-Z0-9]+$', _value):
+    if not re.match(r'^[a-zA-Z0-9\s]+$', _value):
         raise ValidationError(VALIDATOR_SPECTIAL_CHARACTER)
 
 
@@ -97,7 +97,11 @@ class Posts(models.Model):
 
     suburbs = models.ForeignKey(
         'Suburbs', on_delete=models.CASCADE, null=True, blank=True)
-    user = models.ForeignKey('Users', on_delete=models.CASCADE)
+
+    username = models.CharField(max_length=100, blank=True, null=True)
+    fullname = models.TextField(blank=True, null=True)
+    suburb_raw = models.TextField(blank=True, null=True)
+    addressShortAddress = models.TextField(blank=True, null=True)
 
     @property
     def ranking(self):

@@ -15,13 +15,12 @@ class PostUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Posts
-        fields = ["postId", "title", "description", "type", "hashtag", "ranking", "user", "suburbs", "countView",
+        fields = ["postId", "title", "description", "type", "hashtag", "ranking", "username", "fullname", "addressShortAddress", "suburb_raw", "suburbs", "countView",
                   "countLike", "countComment", "countShare", "createdAt", "updatedAt"]
 
-        read_only_fields = ["postId", "user"]
+        read_only_fields = ["postId"]
 
     def update(self, instance, validated_data):
-        validated_data["user"] = instance.user
         return super().update(instance, validated_data)
 
 
@@ -30,7 +29,7 @@ class PostsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Posts
-        fields = ["postId", "title", "description", "type", "hashtag", "ranking", "user", "suburbs", "countView",
+        fields = ["postId", "title", "description", "type", "hashtag", "ranking", "username", "fullname", "addressShortAddress", "suburb_raw", "suburbs", "countView",
                   "countLike", "countComment", "countShare", "createdAt", "updatedAt"]
 
 

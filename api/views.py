@@ -150,7 +150,6 @@ class PostsListApiView(APIView):
         data_queryset = []
 
         change = False
-        have_suburbs = False
         if suburbs:
             combineds = []
             for suburb_raw in suburbs:
@@ -158,11 +157,7 @@ class PostsListApiView(APIView):
             suburbs_ids = list(get_id_from_combined(combineds))
 
             data_queryset = self.filter_by_list_suburbs(queryset, suburbs_ids)
-            post_ids_ordered = [post.postId for post in data_queryset]
             queryset = queryset.filter(postId__in=data_queryset)
-
-            if queryset:
-                have_suburbs = True
 
         if not queryset:
             queryset = get_post_sort_by_ranking()
@@ -184,8 +179,13 @@ class PostsListApiView(APIView):
 
         if search is not None:
             change = True
-            queryset = queryset.filter(Q(title__icontains=search) | Q(
-                description__icontains=search) | Q(hashtag__icontains=search))
+            queryset = queryset.filter(Q(title__icontains=search) |
+                                       Q(description__icontains=search) |
+                                       Q(hashtag__icontains=search) |
+                                       Q(username__icontains=search) |
+                                       Q(fullname__icontains=search) |
+                                       Q(suburb_raw__icontains=search) |
+                                       Q(addressShortAddress__icontains=search))
 
         if not change and not queryset:
             queryset_ranking = get_post_sort_by_ranking()
@@ -199,14 +199,8 @@ class PostsListApiView(APIView):
             sum_ranking=F('ranking__sum_ranking'))
         sorted_posts = annotated_posts.order_by('-sum_ranking')
 
-        if have_suburbs:
-            queryset = queryset.filter(postId__in=post_ids_ordered).order_by(
-                Case(*[When(postId=post_id, then=pos) for pos, post_id in enumerate(post_ids_ordered)]))
-
-        posts_response = queryset if have_suburbs else sorted_posts
-
         paginator = self.pagination_class()
-        page = paginator.paginate_queryset(posts_response, request)
+        page = paginator.paginate_queryset(sorted_posts, request)
         serializer = self.serializer_class(
             page, many=True)
 
@@ -257,6 +251,51 @@ class PostListCreate(ListCreateAPIView):
     def delete(self, request, *args, **kwargs):
         Posts.objects.all().delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def put(self, request, *args, **kwargs):
+        data = request.data
+
+        if not data:
+            return Response({"message": "No data provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        postId = data.get('postId')
+        if not postId:
+            return Response({"message": error.VALIDATOR_POST_ID_REQUIRED}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            post = Posts.objects.get(postId=postId)
+        except:
+            post = None
+
+        if "suburbs" in data:
+            suburbs_raw = data["suburbs"]
+            suburb_converted = preprocessing_data.convert_raw_suburbs(
+                suburbs_raw)
+            suburb = Suburbs.objects.none()
+            if isinstance(suburbs_raw, str):
+                suburb = Suburbs.objects.filter(SA1=suburbs_raw).first()
+            else:
+
+                suburb = Suburbs.objects.filter(
+                    Combined=suburb_converted).first()
+            data['suburbs'] = suburb.SA1 if suburb else None
+
+        if not post:
+            serializer = self.get_serializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                logger.info("Create post {} successfully.".format(postId))
+
+        else:
+            serializer = self.get_serializer(
+                isinstance=post, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                logger.info("Update post {} successfully.".format(postId))
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "Update data successfully."}, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         postId = request.data.get("postId")
@@ -389,11 +428,9 @@ class PostRetrieveUpdateDestroy(RetrieveUpdateDestroyAPIView):
 
     def put(self, request, *args, **kwargs):
         instance = self.get_object()
-        user_id = instance.user_id
 
         data_copy = request.data.copy()
 
-        data_copy['user_id'] = user_id
         if "suburbs" in request.data:
 
             suburbs_raw = data_copy.get("suburbs")
@@ -542,6 +579,10 @@ class UserListCreateApiView(ListCreateAPIView):
     queryset = Users.objects.all()
     serializer_class = UserSerializer
     pagination_class = CustomPagination
+
+    def delete(self, request, *args, **kwargs):
+        Posts.objects.all().delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UserRetrieveDestroyApiView(RetrieveUpdateDestroyAPIView):
